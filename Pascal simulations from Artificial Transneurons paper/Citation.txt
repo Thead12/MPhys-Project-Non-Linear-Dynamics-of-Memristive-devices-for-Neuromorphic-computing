@@ -1,0 +1,5 @@
+Paper:
+Midya, R., Pawar, A.S., Pattnaik, D.P. et al. Artificial transneurons emulate neuronal activity in different areas of brain cortex. Nat Commun 16, 7289 (2025). https://doi.org/10.1038/s41467-025-62151-9
+
+Code:
+Saveliev, S. (2025) ‘Pascal Programs for an Artificial Neuron Based on a Diffusive Memristor: Stochastic and Deterministic Models’. Zenodo. doi:10.5281/zenodo.15497230.
