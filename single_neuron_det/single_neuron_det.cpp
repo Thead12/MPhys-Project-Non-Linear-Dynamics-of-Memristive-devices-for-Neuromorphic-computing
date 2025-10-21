@@ -83,14 +83,21 @@ public:
 
 extern double qT = 0.5; // "thermal charge"
 extern double cT = 0.18; // "thermal capacitance"
-extern double V_ext = 1.0; // "external voltage"
+extern double V_ext = 0.0; // "external voltage"
 extern double R_ext = 500; // "external resistance"
 extern double k = 0.9; // "thermal dissipation"
 extern double i0 = 0.3; // "height of potential"
 
-extern double dt = 0.001;
-extern double t_max = 1;
-extern double save_seconds = 0.1;
+// initial conditions
+extern double x_0 = -1 + 0.0001; // Causer of Nans!
+//extern double x_0 = -0.2;
+extern double T_prime_0 = 0.0;
+extern double V_0 = 0.0;
+extern double V_prime_0 = 0.0;
+
+extern double dt = 0.0001;
+extern double t_max = 100;
+extern double save_seconds = 5;
 
 extern bool save_results = false;
 
@@ -133,7 +140,7 @@ double pot(double position)
 
 double x_dot(double t, vector<double> state)
 {
-    return -pot(x) - 0.633 * V - qT * T_prime;
+    return pot(x) - 0.633 * V - qT * T_prime;
 }
 
 double T_prime_dot(double t, vector<double> state)
@@ -166,13 +173,7 @@ int main(int argc, char** argv) {
     vector<double> V_vec(saved_steps);
     vector<double> V_prime_vec(saved_steps);
 
-    // initial conditions
     double t = 0.0;
-    //double x_0 = -1 + 0.0001; // Causer of Nans!
-    double x_0 = -0.2;
-	double T_prime_0 = 0.0;
-    double V_0 = 0.0;
-	double V_prime_0 = 0.0;
 
     // state vector layout: [x, T', V, V']
     vector <double> state(4);
@@ -226,4 +227,3 @@ int main(int argc, char** argv) {
     
     return 0;
 }
-
