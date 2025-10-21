@@ -90,7 +90,7 @@ extern double i0 = 0.3; // "height of potential"
 
 extern double dt = 0.001;
 extern double t_max = 1;
-extern int save_seconds = 0.1;
+extern double save_seconds = 0.1;
 
 extern bool save_results = false;
 
@@ -226,3 +226,4 @@ int main(int argc, char** argv) {
     
     return 0;
 }
+
