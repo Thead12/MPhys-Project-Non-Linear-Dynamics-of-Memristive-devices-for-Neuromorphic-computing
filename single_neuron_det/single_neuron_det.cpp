@@ -83,23 +83,23 @@ public:
 
 extern double qT = 0.5; // "thermal charge"
 extern double cT = 0.18; // "thermal capacitance"
-extern double V_ext = 0.0; // "external voltage"
+extern double V_ext = 2; // "external voltage"
 extern double R_ext = 500; // "external resistance"
 extern double k = 0.9; // "thermal dissipation"
 extern double i0 = 0.3; // "height of potential"
 
 // initial conditions
-extern double x_0 = -1 + 0.0001; // Causer of Nans!
+extern double x_0 = -1 + 0.0001;
 //extern double x_0 = -0.2;
 extern double T_prime_0 = 0.0;
 extern double V_0 = 0.0;
 extern double V_prime_0 = 0.0;
 
-extern double dt = 0.0001;
-extern double t_max = 100;
-extern double save_seconds = 5;
+extern double dt = 0.00001;
+extern double t_max = 20;
+extern double save_seconds = 0.1;
 
-extern bool save_results = false;
+extern bool save_results = true;
 
 template<typename F>
 double RK4(F&& f, double t, vector<double> state, int variable, double dt)
@@ -217,8 +217,8 @@ int main(int argc, char** argv) {
     cout << "------------------------saving results--------------------------" << endl;
 	string title = "single_neuron_det_results";
 	string header = "t, x, T_prime, V, V_prime";
-	vector<string> param_names = { "qT", "cT", "V_ext", "R_ext", "k", "i0", "steps", "dt" };
-	vector<double> param_values = { qT, cT, V_ext, R_ext, k, i0, (double)steps, dt };
+	vector<string> param_names = { "qT", "cT", "V_ext", "R_ext", "k", "i0", "dt" };
+	vector<double> param_values = { qT, cT, V_ext, R_ext, k, i0, dt };
     vector<vector<double>> final_results = vector<vector<double>>{t_vec, x_vec, T_prime_vec, V_vec, V_prime_vec };
     
     if (!ResultsWriter::SaveResults(title, header, param_names, param_values, final_results, saved_steps, argc, argv)) {
