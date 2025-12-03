@@ -118,9 +118,10 @@ int main(int argc, char* argv[])
     }
     p.V_ext = p.V_min;
 
-    outfile << "Parameters: V_min=" << p.V_min << ", V_max=" << p.V_max << ", V_step" << p.V_step << ", qT=" << p.qT << ", kappa = " << p.kappa
-        << ", R_ext = " << p.R_ext << ", cT = " << p.cT << ", i0 = " << p.i0
-        << ", tc=" << p.tc << ", lam=" << p.lam << endl;
+    outfile << "Parameters: V_min=" << p.V_min << ", V_max=" << p.V_max << ", V_step=" << p.V_step << ", qT=" << p.qT << ", kappa=" << p.kappa
+        << ", R_ext=" << p.R_ext << ", cT=" << p.cT << ", i0=" << p.i0
+        << ", tc=" << p.tc << ", lam=" << p.lam
+        << ", tmax=" << tmax << ", dt=" << dt << endl;
 
     outfile << "V_ext,x_min,x_max,x_f,T'_f,V_f,V'_f" << endl; // write header
 
