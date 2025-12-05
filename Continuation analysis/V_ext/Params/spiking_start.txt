@@ -1,0 +1,16 @@
+# initial conditions
+x0 		-0.951687952112742
+T_prime0 	0.000305456431794615
+V0 		0.73555222979154
+V_prime0	-1.6209591395295
+
+# voltage ranges
+V_min 	1.1
+V_max 	3.0
+V_step 	0.1
+
+# Simulation time
+tmax 	500.0
+dt 	0.0001
+
+
