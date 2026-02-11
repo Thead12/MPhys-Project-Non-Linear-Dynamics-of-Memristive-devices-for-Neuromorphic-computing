@@ -53,7 +53,6 @@ int main(int argc, char* argv[])
     std::string param_file = argv[1];
     std::string output_file = argv[2];
 
-
     std::ifstream infile(param_file);
     if (!infile.is_open()) {
         std::cerr << "Failed to open " << param_file << "\n";
@@ -159,14 +158,7 @@ int main(int argc, char* argv[])
             
             if (t > tmax) // end
             {
-                cerr << "-------------Incrementing V_ext=" << p.V_ext << endl;
-                outfile << p.V_ext << "," << p.R_ext << "," << x_min << "," << x_max << ",";
-
-                // print final state
-                outfile << setprecision(15) << initial_R_min_state[0];
-                for (int i = 1; i < D; i++) {
-                    outfile << "," << initial_R_min_state[i];
-                }                outfile << endl;
+                cerr << "-------------Incrementing V_ext=" << p.V_ext << "-------------" << endl;
                 break;
             }
 
@@ -195,6 +187,7 @@ int main(int argc, char* argv[])
                     outfile << p.V_ext << "," << p.R_ext << "," << x_min << "," << x_max << ",";
 
                     // print final state
+                    cerr << "inside R_ext while loop" << endl;
                     outfile << setprecision(15) << state[0];
                     for (int i = 1; i < D; i++) {
                         outfile << "," << state[i];
@@ -209,22 +202,12 @@ int main(int argc, char* argv[])
                 t += dt;
             }
 
-            outfile << p.V_ext << "," << p.R_ext << "," << x_min << "," << x_max << ",";
-
-            // print final state
-            outfile << setprecision(15) << state[0];
-            for (int i = 1; i < D; i++) {
-                outfile << "," << state[i];
-            }                outfile << endl;
-
             p.R_ext += p.R_step;
         }
 
         p.V_ext += p.V_step;
-        cerr << "||" << endl;
     }
     cerr << "\n|=============== Simulation Finished ===============|" << endl;
-
 
 }
 template<size_t N>
