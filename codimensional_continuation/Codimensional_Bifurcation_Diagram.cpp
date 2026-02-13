@@ -1,6 +1,3 @@
-// Rossler_attractor.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -47,21 +44,30 @@ constexpr size_t D = 4;
 int main(int argc, char* argv[])
 {
     if (argc < 3) {
-        std::cerr << "Usage: single_neuron.exe <params_file> <output_csv>\n";
+        std::cerr << "Usage: single_neuron.exe <params_file> <output_name>\n";
         return 1;
     }
+
     std::string param_file = argv[1];
-    std::string output_file = argv[2];
+    std::string base_name = argv[2]; // Safely capture the base name
 
+    // construct file names
+    std::string path_up = base_name + "_up.csv";
+    std::string path_down = base_name + "_down.csv";
+
+    // open input
     std::ifstream infile(param_file);
-    if (!infile.is_open()) {
-        std::cerr << "Failed to open " << param_file << "\n";
+    if (!infile) {
+        std::cerr << "Error: Could not open input file " << param_file << "\n";
         return 1;
     }
 
-    std::ofstream outfile(output_file);
-    if (!outfile.is_open()) {
-        std::cerr << "Failed to open " << output_file << " for writing\n";
+    // open outputs
+    std::ofstream outfile_up(path_up);
+    std::ofstream outfile_down(path_down);
+
+    if (!outfile_up || !outfile_down) {
+        std::cerr << "Error: Could not open one or more output files for writing.\n";
         return 1;
     }
 
@@ -124,88 +130,116 @@ int main(int argc, char* argv[])
             else std::cerr << "Unknown parameter: " << name << "\n";
         }
     }
-    p.V_ext = p.V_min;
-    p.R_ext = p.R_min;
 
-    outfile << "Parameters: V_min=" << p.V_min << ", V_max=" << p.V_max << ", V_step=" << p.V_step
+    outfile_up << "Parameters: V_min=" << p.V_min << ", V_max=" << p.V_max << ", V_step=" << p.V_step
         << " | R_min=" << p.R_min << ", R_max=" << p.R_max << ", R_step=" << p.R_step
         << " | qT=" << p.qT << ", kappa=" << p.kappa
         << ", R_ext=" << p.R_ext << ", cT=" << p.cT << ", i0=" << p.i0
         << ", tc=" << p.tc << ", lam=" << p.lam
-        << ", tmax=" << tmax << ", dt=" << dt << endl;
+        << ", tmax=" << tmax << ", dt=" << dt << ", (Increasing V_ext)" << endl;
 
-    outfile << "V_ext,R_ext,x_min,x_max,x_f,T'_f,V_f,V'_f" << endl; // write header
+    outfile_up << "V_ext,R_ext,x_min,x_max,x_f,T'_f,V_f,V'_f" << endl; // write header
+
+    outfile_down << "Parameters: V_min=" << p.V_min << ", V_max=" << p.V_max << ", V_step=" << -p.V_step
+        << " | R_min=" << p.R_min << ", R_max=" << p.R_max << ", R_step=" << p.R_step
+        << " | qT=" << p.qT << ", kappa=" << p.kappa
+        << ", R_ext=" << p.R_ext << ", cT=" << p.cT << ", i0=" << p.i0
+        << ", tc=" << p.tc << ", lam=" << p.lam
+        << ", tmax=" << tmax << ", dt=" << dt << ", (Decreasing V_ext)" << endl;
+
+    outfile_down << "V_ext,R_ext,x_min,x_max,x_f,T'_f,V_f,V'_f" << endl; // write header
 
     int step = 0;
     int n_steps = round(tmax / dt);
 
-
     double x_min = 1.1;
     double x_max = -1.1;
 
+   // setting starting point for V_ext
+    double R_start = (p.R_step < 0) ? p.R_max : p.R_min;
+
+    int v_steps = std::round(std::abs(p.V_max - p.V_min) / std::abs(p.V_step));
+    int r_steps = std::round(std::abs(p.R_max - p.R_min) / std::abs(p.R_step));
+    int t_steps = std::round(tmax / dt);
+
     State<D> initial_R_min_state = state;
-    while (p.V_min <= p.V_ext && p.V_ext <= p. V_max)
+
+    // R_ext iterations
+    for (int i = 0; i <= r_steps; ++i)
     {
-        p.R_ext = p.R_min;
+        cerr << "-------------Incrementing R_ext=" << p.R_ext << "-------------" << endl;
+
+        p.R_ext = R_start + (i * p.R_step);
+        p.V_ext = p.V_min;
 
         t = 0.0;
+        x_min = 100.0;
+        x_max = -100.0;
 
-        x_min = 1.1;
-        x_max = -1.1;
-        // calculating initial R_min state
-        while (true)
+        state = initial_R_min_state;
+
+        for (int k = 0; k < t_steps; ++k)
         {
-            
-            if (t > tmax) // end
-            {
-                cerr << "-------------Incrementing V_ext=" << p.V_ext << "-------------" << endl;
-                break;
-            }
-
-            // calculate
-            RK4_step<D>(t, initial_R_min_state, p, dt, single_neuron_rhs<D>);
-            x_min = min(x_min, initial_R_min_state[0]);
-            x_max = max(x_max, initial_R_min_state[0]);
+            RK4_step<D>(t, state, p, dt, single_neuron_rhs<D>);
+            x_min = min(x_min, state[0]);
+            x_max = max(x_max, state[0]);
             t += dt;
         }
 
-        state = initial_R_min_state;
-        while (p.R_min <= p.R_ext && p.R_ext <= p.R_max)
+        cerr << "===Going up===" << endl;
+        // V_ext up
+        for (int j = 0; j <= v_steps; ++j)
         {
+            p.V_ext = p.V_min + (j * p.V_step);
             cerr << "(" << p.V_ext << ", " << p.R_ext << ")" << endl;
 
             t = 0.0;
+            x_min = 100.0;
+            x_max = -100.0;
 
-            x_min = 1.1;
-            x_max = -1.1;
-
-            while (true)
+            for (int k = 0; k < t_steps; ++k)
             {
-
-                if (t > tmax) // end
-                {
-                    outfile << p.V_ext << "," << p.R_ext << "," << x_min << "," << x_max << ",";
-
-                    // print final state
-                    cerr << "inside R_ext while loop" << endl;
-                    outfile << setprecision(15) << state[0];
-                    for (int i = 1; i < D; i++) {
-                        outfile << "," << state[i];
-                    }                outfile << endl;
-                    break;
-                }
-
-                // calculate
                 RK4_step<D>(t, state, p, dt, single_neuron_rhs<D>);
                 x_min = min(x_min, state[0]);
                 x_max = max(x_max, state[0]);
                 t += dt;
             }
 
-            p.R_ext += p.R_step;
+            outfile_up << p.V_ext << "," << p.R_ext << "," << x_min << "," << x_max << ",";
+            outfile_up << setprecision(15) << state[0];
+            for (int n = 1; n < D; n++) {
+                outfile_up << "," << state[n];
+            }
+            outfile_up << endl;
         }
 
-        p.V_ext += p.V_step;
+        cerr << "===Coming down===" << endl;
+        // V_ext down
+        for (int j = 0; j <= v_steps; ++j)
+        {
+            p.V_ext = p.V_max - (j * p.V_step);
+            cerr << "(" << p.V_ext << ", " << p.R_ext << ")" << endl;
+
+            t = 0.0;
+            x_min = 100.0;
+            x_max = -100.0;
+
+            for (int k = 0; k < t_steps; ++k)
+            {
+                RK4_step<D>(t, state, p, dt, single_neuron_rhs<D>);
+                x_min = min(x_min, state[0]);
+                x_max = max(x_max, state[0]);
+                t += dt;
+            }
+
+            outfile_down << p.V_ext << "," << p.R_ext << "," << x_min << "," << x_max << ",";
+            outfile_down << setprecision(15) << state[0];
+            for (int n = 1; n < D; n++) {
+                outfile_down << "," << state[n];
+            }
+            outfile_down << endl;
+        }
+
     }
     cerr << "\n|=============== Simulation Finished ===============|" << endl;
 
