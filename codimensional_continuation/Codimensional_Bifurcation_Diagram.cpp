@@ -28,6 +28,8 @@ static struct params {
     double R_min = 0.0;
     double R_max = 0.0;
     double R_step = 0.0;
+
+    int logscale = -1;
 };
 
 template<size_t N>
@@ -123,6 +125,8 @@ int main(int argc, char* argv[])
             else if (name == "R_max") p.R_max = value;
             else if (name == "R_step") p.R_step = value;
 
+            else if (name == "logscale") p.logscale = value;
+
             // Simulation time
             else if (name == "tmax") tmax = value;
             else if (name == "dt") dt = value;
@@ -151,6 +155,7 @@ int main(int argc, char* argv[])
 
     int step = 0;
     int n_steps = round(tmax / dt);
+    double log_step = (log10(p.V_max) - log10(p.V_min)) / (p.logscale - 1);
 
     double x_min = 1.1;
     double x_max = -1.1;
@@ -158,7 +163,13 @@ int main(int argc, char* argv[])
    // setting starting point for V_ext
     double R_start = (p.R_step < 0) ? p.R_max : p.R_min;
 
-    int v_steps = std::round(std::abs(p.V_max - p.V_min) / std::abs(p.V_step));
+    int v_steps;
+    if (p.logscale > 0) {
+        v_steps = p.logscale;
+    }
+    else {
+        v_steps = std::round(std::abs(p.V_max - p.V_min) / std::abs(p.V_step));
+    }
     int r_steps = std::round(std::abs(p.R_max - p.R_min) / std::abs(p.R_step));
     int t_steps = std::round(tmax / dt);
 
@@ -167,9 +178,10 @@ int main(int argc, char* argv[])
     // R_ext iterations
     for (int i = 0; i <= r_steps; ++i)
     {
+        
+        p.R_ext = R_start + (i * p.R_step);
         cerr << "-------------Incrementing R_ext=" << p.R_ext << "-------------" << endl;
 
-        p.R_ext = R_start + (i * p.R_step);
         p.V_ext = p.V_min;
 
         t = 0.0;
@@ -190,7 +202,13 @@ int main(int argc, char* argv[])
         // V_ext up
         for (int j = 0; j <= v_steps; ++j)
         {
-            p.V_ext = p.V_min + (j * p.V_step);
+            if (p.logscale > 0.0) {
+                p.V_ext = pow(10.0, (log10(p.V_min) + j * log_step));
+            }
+            else {
+                p.V_ext = p.V_min + (j * p.V_step);
+            }
+
             cerr << "(" << p.V_ext << ", " << p.R_ext << ")" << endl;
 
             t = 0.0;
@@ -215,9 +233,14 @@ int main(int argc, char* argv[])
 
         cerr << "===Coming down===" << endl;
         // V_ext down
-        for (int j = 0; j <= v_steps; ++j)
+        for (int j = v_steps; j >= 0; j--)
         {
-            p.V_ext = p.V_max - (j * p.V_step);
+            if (p.logscale > 0) {
+                p.V_ext = pow(10.0, log10(p.V_min) + (j * log_step));
+            }
+            else {
+                p.V_ext = p.V_max - (j * p.V_step);
+            }
             cerr << "(" << p.V_ext << ", " << p.R_ext << ")" << endl;
 
             t = 0.0;
