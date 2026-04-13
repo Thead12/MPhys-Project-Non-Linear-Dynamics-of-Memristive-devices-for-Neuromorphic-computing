@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Selectivity_Optimisation/Selectivity_Optimisation.vcxproj" Id="3083f615-c829-4d7b-b19f-5d3e1321cb8c" />
+</Solution>
